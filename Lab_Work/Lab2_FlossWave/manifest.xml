@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package version="0.0.0" uuid="lab2_flosswave-79d07f">
+ <names>
+  <name lang="en_US">Lab2_FlossWave</name>
+ </names>
+ <supportedLanguages>
+  <language>en_US</language>
+ </supportedLanguages>
+ <descriptionLanguages>
+  <language>en_US</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path="behavior_1">
+   <userRequestable/>
+   <nature>interactive</nature>
+   <permissions/>
+  </behaviorContent>
+ </contents>
+</package>
