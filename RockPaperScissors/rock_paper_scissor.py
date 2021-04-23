@@ -4,6 +4,7 @@ from naoqi import ALProxy
 import time
 import motion
 import random
+import almath
 
 Nao_ip = "192.168.86.35"
 PORT=9559
@@ -26,10 +27,11 @@ def makeRandomChoice():
 
 
 # Specified joint data and time series data for robot movement
-# @param speed: rhythm speed, number in range 0(excludsive) to 4(includsive)
-# @param iteration: number of beat
+# @param bps: rhythm speed in bps
+# @param iteration: number of total beats (prior + last three move)
 # @param offset: time till start the first movement
-def movement(speed,iteration,offset,motionProxy):
+def movement(bps,iteration,offset,motionProxy):
+    priorBeat = iteration-3 
     names      = ["RShoulderPitch", "RElbowRoll", "RHand","RWristYaw"]
     rShoulderPitchJoints = [0.05,0.7] #shoulder pitch joint for pose A and B
     rElbowRollJoints = [1.5,0.9] #elbow roll joint for pose A and B
@@ -45,10 +47,13 @@ def movement(speed,iteration,offset,motionProxy):
     wristFulldata.append(choiceJoint[1])
 
     angleLists = [pitchFullData,rollFullData,handFulldata,wristFulldata] #combine all joints data
-
-    timeList = np.linspace(offset,(1/speed)*iteration*2+offset,iteration*2,endpoint=False).tolist()
+    # timeList = np.linspace(offset,(1/speed)*iteration*2+offset,iteration*2,endpoint=False).tolist()
+    timePerBeat = 60/bps
+    startMove = offset
+    endMove = offset+timePerBeat*iteration*2
+    timeList = np.arange(startMove, endMove, timePerBeat).tolist()
+    print (timeList)
     times      = [timeList,timeList,timeList,timeList] #chocie is only visible at the last timestamp
-
     isAbsolute = True
     motionProxy.angleInterpolation(names, angleLists, times, isAbsolute)
 
@@ -66,12 +71,13 @@ def main():
 
     #############################
     # Greeting
-    tts.say("Hi, Do you want to play Rock Paper Scissor with me?")
+    # tts.say("Hi, Do you want to play Rock Paper Scissor with me?")
+    tts.say("Hi")
     time.sleep(1.0)
 
     #############################
     # Movement
-    movement(speed=3.5,iteration=4,offset=1,motionProxy=motionProxy)
+    movement(bps=120,iteration=3,offset=1,motionProxy=motionProxy)
 
 if __name__ == "__main__":
     main()
