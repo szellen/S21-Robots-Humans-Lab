@@ -5,12 +5,23 @@ import time
 import motion
 import random
 import almath
+import requests
 
+from datetime import datetime
+
+server_ip = "http://192.168.86.178:5000/"
 Nao_ip = "192.168.86.35"
 PORT=9559
 rock_joint = [0,0]
 paper_joint=[1,1.7]
 scissor_joint=[1,-1]
+rShoulderPitchJoints = [0.05,0.7] #shoulder pitch joint for pose A and B
+rElbowRollJoints = [1.5,0.9] #elbow roll joint for pose A and B
+
+tts = ALProxy("ALTextToSpeech", Nao_ip, PORT)
+motionProxy = ALProxy("ALMotion", Nao_ip, PORT)
+postureProxy = ALProxy("ALRobotPosture", Nao_ip, PORT)
+memory = ALProxy("ALMemory",Nao_ip, PORT)
 
 # randomly select 'rock','paper' and 'scissor' and return pre-defined joint data for corresponding choise
 def makeRandomChoice():
@@ -28,42 +39,52 @@ def makeRandomChoice():
 
 # Specified joint data and time series data for robot movement
 # @param bps: rhythm speed in bps
-# @param iteration: number of total beats (prior + last three move)
-# @param offset: time till start the first movement
-def movement(bps,iteration,offset,motionProxy):
-    priorBeat = iteration-3 
+# @param iteration: number of total beats 
+def playEachRound(bpm,iteration):
     names      = ["RShoulderPitch", "RElbowRoll", "RHand","RWristYaw"]
-    rShoulderPitchJoints = [0.05,0.7] #shoulder pitch joint for pose A and B
-    rElbowRollJoints = [1.5,0.9] #elbow roll joint for pose A and B
-
     pitchFullData = rShoulderPitchJoints*iteration # n iterations
     rollFullData=rElbowRollJoints*iteration  # n iterations
     
-    choiceJoint= makeRandomChoice()
+    choiceJoint= makeRandomChoice() #make random choice
 
     handFulldata = [0] * (iteration*2-1)
     handFulldata.append(choiceJoint[0])
     wristFulldata = [0] * (iteration*2-1)
     wristFulldata.append(choiceJoint[1])
-
     angleLists = [pitchFullData,rollFullData,handFulldata,wristFulldata] #combine all joints data
-    # timeList = np.linspace(offset,(1/speed)*iteration*2+offset,iteration*2,endpoint=False).tolist()
-    timePerBeat = 60/bps
-    startMove = offset
-    endMove = offset+timePerBeat*iteration*2
-    timeList = np.arange(startMove, endMove, timePerBeat).tolist()
-    print (timeList)
+  
+    timePerBeat = 60/(bpm*2)
+    startMove = 1 
+    endMove = startMove+timePerBeat*iteration*2
+    timeList = np.arange(startMove, endMove, timePerBeat).tolist()[0:iteration*2]
     times      = [timeList,timeList,timeList,timeList] #chocie is only visible at the last timestamp
-    isAbsolute = True
-    motionProxy.angleInterpolation(names, angleLists, times, isAbsolute)
+    
+    motionProxy.angleInterpolation(names, angleLists, times, True)
 
+
+def showSampleBeat(bpm,iteration):
+    names      = ["RShoulderPitch", "RElbowRoll"]
+    pitchFullData = rShoulderPitchJoints*iteration # n iterations
+    rollFullData=rElbowRollJoints*iteration  # n iterations
+
+    angleLists = [pitchFullData,rollFullData] #combine all joints data
+    timePerBeat = 60/(bpm*2)
+    startMove = 1 
+    endMove = startMove+timePerBeat*iteration*2
+    timeList = np.arange(startMove, endMove, timePerBeat).tolist()[0:iteration*2]
+    times      = [timeList,timeList]
+
+    sendTimestamp("START: ")
+    id=motionProxy.post.angleInterpolation(names, angleLists, times, True)
+    motionProxy.wait(id,0)
+    sendTimestamp("STOP: ")
+
+def sendTimestamp(identifier):
+    timestamp = datetime.now().time()
+    res = requests.get(server_ip + "addTimestamp?timestamp=" +identifier + str(timestamp))
+    print(res)
 
 def main():
-    tts = ALProxy("ALTextToSpeech", Nao_ip, PORT)
-    motionProxy = ALProxy("ALMotion", Nao_ip, PORT)
-    postureProxy = ALProxy("ALRobotPosture", Nao_ip, PORT)
-    memory = ALProxy("ALMemory",Nao_ip, PORT)
-
     #############################
     # Init posture
     motionProxy.wakeUp()
@@ -76,8 +97,17 @@ def main():
     time.sleep(1.0)
 
     #############################
-    # Movement
-    movement(bps=120,iteration=3,offset=1,motionProxy=motionProxy)
+    # Game session starts
+    # bpm = requests.get(server_ip+"bpm").text
+    bpm=60
+
+    # tts.say("Here is the sample beat")
+    # time.sleep(1.0)
+    showSampleBeat(bpm=int(bpm),iteration=20)
+
+    # time.sleep(1.0)
+    # tts.say("Round start")
+    # playEachRound(bpm=int(bpm),iteration=3)
 
 if __name__ == "__main__":
     main()
