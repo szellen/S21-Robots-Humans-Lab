@@ -47,7 +47,6 @@ def track():
         if gesture != "NaN":
             requests.get(REQUEST_ADDRESS.format(gesture, frameTime))
 
-
         frame = aruco.drawDetectedMarkers(frame, corners)
 
         cv2.putText(frame, "Gesture: " + gesture, (0,50), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
@@ -88,15 +87,11 @@ def get_final_gesture():
         return "NaN"
     else:
         return "Rock"
-    
-    # if paperCount >= scissorCount and paperCount >= rockCount and paperCount >= nanCount:
-    #     return "Paper"
-    # elif scissorCount >= paperCount and scissorCount >= rockCount and scissorCount >= nanCount:
-    #     return "Scissor"
-    # elif rockCount >= scissorCount and rockCount >= paperCount and rockCount >= nanCount:
-    #     return "Rock"
-    # else:
-    #     return "NaN"
 
 if __name__ == "__main__":
     track()
+
+'''
+2. Robot's Time Feedback
+3. Link Controller Server to Robot Server
+'''
