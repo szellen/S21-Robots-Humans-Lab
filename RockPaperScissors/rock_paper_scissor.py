@@ -22,10 +22,12 @@ scissor_joint=[1,-1]
 rShoulderPitchJoints = [0.05,0.7] #shoulder pitch joint for pose A and B
 rElbowRollJoints = [1.5,0.9] #elbow roll joint for pose A and B
 
-tts = ALProxy("ALTextToSpeech", Nao_ip, PORT)
-motionProxy = ALProxy("ALMotion", Nao_ip, PORT)
-postureProxy = ALProxy("ALRobotPosture", Nao_ip, PORT)
+# tts = ALProxy("ALTextToSpeech", Nao_ip, PORT)
+# motionProxy = ALProxy("ALMotion", Nao_ip, PORT)
+# postureProxy = ALProxy("ALRobotPosture", Nao_ip, PORT)
 
+human_winning_phrase = ["You win", " I lose", "Congrats, you win", "You are the winner", "I will beat you next time"]
+robot_winning_phrase = ["Haha I win", "I am sorry but you lose"]
 
 # randomly select 'rock','paper' and 'scissor' and return pre-defined joint data for corresponding choise
 def getRandomChoice():
@@ -42,7 +44,7 @@ def getRandomChoice():
 # Specified joint data and time series data for robot movement
 # @param bps: rhythm speed in bps
 # @param iteration: number of total beats 
-def playEachRound(bpm):
+def playEachRound(bpm,tts,motionProxy):
     names      = ["RShoulderPitch", "RElbowRoll", "RHand","RWristYaw"]
 
     choice, choiceJoint= getRandomChoice() #make random choice
@@ -66,9 +68,9 @@ def playEachRound(bpm):
     id=motionProxy.post.angleInterpolation(names, angleLists, times, True)
     motionProxy.wait(id,0)
 
-    sendTimestamp(choice)
+    sendTimestamp(choice,tts)
 
-def showSampleBeat(bpm,iteration):
+def showSampleBeat(bpm,iteration,motionProxy):
     names      = ["RShoulderPitch", "RElbowRoll"]
     angleLists = [rShoulderPitchJoints*iteration,rElbowRollJoints*iteration] #combine all joints data
 
@@ -82,35 +84,35 @@ def showSampleBeat(bpm,iteration):
     return id2
 
 
-def sendTimestamp(action):
+def sendTimestamp(action,tts):
     timestamp = time.time()
     # print(timestamp)
     res = requests.get(server_ip + "addTimestamp?data=" + action + "_" + str(timestamp))
     print(res.text)
-    result = res.text.split("|")[0]
-    tts.say(str(result))
+    winner = res.text.split("_")[0]
+    move_delay = res.text.split("_")[1]
+    bpm_difference = res.text.split("_")[2]
+    # tts.say(str(winner))
 
     global human_wins, robot_wins, draw
-    if result == "I Win":
+    if winner == "Robot":
         robot_wins += 1
-    elif result == "You Win":
+        tts.say(robot_winning_phrase[random.randint(0,len(robot_winning_phrase)-1)])
+    elif winner == "Human":
         human_wins += 1
-    elif result == "Draw":
+        tts.say(human_winning_phrase[random.randint(0,len(human_winning_phrase)-1)])
+    elif winner == "Draw":
         draw += 1
+        tts.say(str(winner))
 
 
-
-## get result from server and speak accordingly
-def informResult(result):
-    if result == "OK":
-        tts.say("Good rhythm")
-    elif result == "slow":#user is slow
-        tts.say("too slow")
-    elif result == "fast": #user is fast
-        tts.say("too fast")
 
 
 def main():
+    tts = ALProxy("ALTextToSpeech", Nao_ip, PORT)
+    motionProxy = ALProxy("ALMotion", Nao_ip, PORT)
+    postureProxy = ALProxy("ALRobotPosture", Nao_ip, PORT)
+
     #############################
     # Init posture
     motionProxy.wakeUp()
@@ -123,9 +125,8 @@ def main():
 
     #############################
     # Greeting
-    # tts.say("Hi, Do you want to play Rock Paper Scissor with me?")
-    # tts.say("Hi")
-    # time.sleep(1.0)
+    tts.say("Hi, let's play Rock Paper Scissor!")
+    time.sleep(1.0)
 
     #############################
     # Game session starts
@@ -135,13 +136,13 @@ def main():
 
     tts.say("Here is the sample beat")
     time.sleep(1.0)
-    id_sample = showSampleBeat(bpm=int(bpm),iteration=5)
+    id_sample = showSampleBeat(bpm=int(bpm),iteration=5,motionProxy=motionProxy)
     motionProxy.wait(id_sample,0)
     time.sleep(1.0)
 
     for i in range(ROUNDS_PER_GAME):
-        tts.say("Round start")
-        playEachRound(bpm=int(bpm))
+        tts.say("Round" + str(i+1) + "start")
+        playEachRound(bpm=int(bpm),tts=tts,motionProxy=motionProxy)
         time.sleep(1.0)
     
     tts.say("You won {} times, lost {} times, and the game was a draw {} times.".format(human_wins, robot_wins, draw))
