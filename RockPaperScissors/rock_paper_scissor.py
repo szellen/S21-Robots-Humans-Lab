@@ -31,11 +31,11 @@ robot_winning_phrase = ["Haha I win.","I win", "I am sorry, you lose.","Sorry yo
 draw_phrase = ["It's a draw.","Draw.","Too bad, it's a draw.","no one wins."]
 
 
-bpm_faster_phrase = ["Too fast, slow down your rhythm.", "Your rhythm was too fast."]
-bpm_slower_phrase = ["Your rhythm is too slow.", "Too slow, speed up your rhythm."]
+bpm_faster_phrase = ["A little fast, slow down your rhythm.", "Your rhythm was a little fast."]
+bpm_slower_phrase = ["Your rhythm is a little slow.", "speed up your rhythm a little."]
 
-move_early_phrase = ["you serve your move too early.", "You land your move too early."]
-move_late_phrase = ["you serve your move too late.", "You land your move too late."]
+move_early_phrase = ["you serve your move early.", "You land your move early."]
+move_late_phrase = ["you serve your move late.", "You land your move late."]
 good_timing_phrase=["And your timing is perfect", "Good timing budy", "You get the timing right"]
 
 game_user_win_phrase = ["Congratulation, You win this game.", "You are the winner. Congratulation", "Congratulation. But I will beat you next time."]
@@ -108,31 +108,35 @@ def sendTimestamp(action,tts):
 
     print (res.text)
     sayFeedback(winner, move_delay, bpm_difference, valid,tts)
-    updateGameScore(winner)
+    # updateGameScore(winner)
 
 
-def updateGameScore(winner):
-    global human_wins, robot_wins, draw
-    if winner == "Robot":
-        robot_wins += 1
-    elif winner == "Human":
-        human_wins += 1
-    elif winner == "Draw":
-        draw += 1
+# def updateGameScore(winner):
+#     global human_wins, robot_wins, draw
+#     if winner == "Robot":
+#         robot_wins += 1
+#     elif winner == "Human":
+#         human_wins += 1
+#     elif winner == "Draw":
+#         draw += 1
 
 
 def sayFeedback(winner, move_delay, bpm_difference, valid, tts):
+    global human_wins, robot_wins, draw
     ## Valid round
-    if (valid == "Valid"):
         ## winner
-        if winner == "Robot":
-            tts.say(robot_winning_phrase[random.randint(0,len(robot_winning_phrase)-1)])
-        elif winner == "Human":
-            tts.say(human_winning_phrase[random.randint(0,len(human_winning_phrase)-1)])
-        elif winner == "Draw":
-            tts.say(draw_phrase[random.randint(0,len(draw_phrase)-1)])
-        time.sleep(0.5)
+    if winner == "Robot":
+        robot_wins+=1
+        tts.say(robot_winning_phrase[random.randint(0,len(robot_winning_phrase)-1)])
+    elif winner == "Human":
+        human_wins += 1
+        tts.say(human_winning_phrase[random.randint(0,len(human_winning_phrase)-1)])
+    elif winner == "Draw":
+        draw += 1
+        tts.say(draw_phrase[random.randint(0,len(draw_phrase)-1)])
+    time.sleep(0.5)
 
+    if (valid == "Valid"):
         delay_check = False
         ## move delay
         if move_delay == "Early":
@@ -157,13 +161,13 @@ def sayFeedback(winner, move_delay, bpm_difference, valid, tts):
         #     time.sleep(0.5)
 
     elif (valid == "Early"):
-        tts.say("This round is invalid because you landed your move way too early")
+        tts.say("You landed your move way too early")
     elif (valid == "Late"):
-        tts.say("This round is invalid because you landed your move way too late")
+        tts.say("You landed your move way too late")
     elif (valid == "Fast"):
-        tts.say("We discard this round because your rhythm is way too fast")
+        tts.say("Your rhythm is way too fast")
     elif (valid == "Slow"):
-        tts.say("We discard this round because your rhythm is way too slow")
+        tts.say("Your rhythm is way too slow")
     else:
         tts.say("Opps, I am receving craps")
 
@@ -194,7 +198,7 @@ def main():
 
     #############################
     # Greeting
-    tts.say("Hi, let's play Rock Paper Scissor!")
+    tts.say("Ready? ")
     time.sleep(1.0)
 
     #############################
@@ -216,5 +220,12 @@ def main():
     else:
         tts.say("This game is a draw. ")
 
+def getSomeSnack():
+    tts = ALProxy("ALTextToSpeech", Nao_ip, PORT)
+    tts.say("Amelia, Thank you so much for playing with me")
+    time.sleep(1)
+    tts.say("Please get some snack!")
+
+
 if __name__ == "__main__":
-    main()
+    getSomeSnack()
