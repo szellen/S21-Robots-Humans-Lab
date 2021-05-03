@@ -1,0 +1,1 @@
+{'game_count': 1, 'round_start_time': '2021-04-28 22:53:26.269526', 'round_count': 1, 'winner': 'Human', 'robot_move': 'Paper', 'human_move': 'Scissor', 'move_delay': -0.10903716087341309, 'robot_rhythm': 140.0, 'human_rhythm': 102.0, 'round_validity': 'Invalid'}

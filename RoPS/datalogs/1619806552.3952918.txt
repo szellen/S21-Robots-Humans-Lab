@@ -1,0 +1,2 @@
+{'game_count': 1, 'round_start_time': '2021-04-30 14:15:41.650316', 'round_count': 1, 'winner': 'Draw', 'robot_move': 'Rock', 'human_move': 'Rock', 'move_delay': -0.17049407958984375, 'robot_rhythm': 90.0, 'human_rhythm': 107.0, 'round_validity': 'Invalid'}
+{'game_count': 1, 'round_start_time': '2021-04-30 14:15:52.395242', 'round_count': 2, 'winner': 'Draw', 'robot_move': 'Scissor', 'human_move': 'Scissor', 'move_delay': -0.18037199974060059, 'robot_rhythm': 90.0, 'human_rhythm': 93.0, 'round_validity': 'Valid'}

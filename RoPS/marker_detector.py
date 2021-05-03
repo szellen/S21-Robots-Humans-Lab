@@ -48,8 +48,10 @@ def track():
             requests.get(REQUEST_ADDRESS.format(gesture, frameTime))
 
         frame = aruco.drawDetectedMarkers(frame, corners)
+        
+        frame = cv2.flip(frame, 1)
 
-        cv2.putText(frame, "Gesture: " + gesture, (0,50), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+        cv2.putText(frame, "Gesture: " + gesture, (0,50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 2)
 
         cv2.imshow("RoPS Gesture Tracker", frame)
 

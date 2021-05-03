@@ -1,0 +1,1 @@
+{'game_count': 1, 'round_start_time': '2021-04-29 20:51:43.401988', 'round_count': 1, 'winner': 'Draw', 'robot_move': 'Rock', 'human_move': 'Rock', 'move_delay': -0.10714077949523926, 'robot_rhythm': 90.0, 'human_rhythm': 86.0, 'round_validity': 'Valid'}
